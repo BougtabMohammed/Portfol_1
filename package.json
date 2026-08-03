@@ -1,0 +1,44 @@
+{
+  "name": "portfolio-mohammed-bougtab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Portfolio professionnel de Mohammed Bougtab — AI Engineer, Data & Agentic Systems",
+  "repository": {
+    "type": "git",
+    "url": "http://local_proxy@127.0.0.1:41729/git/BougtabMohammed/Portfol_1"
+  },
+  "license": "MIT",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "serve": "npx --yes serve@14 out -p 3000",
+    "typecheck": "tsc --noEmit",
+    "pdf": "node scripts/generate-pdf.mjs"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.28.0",
+    "next": "^15.5.22",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "tailwind-merge": "^3.6.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^26.1.2",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "playwright": "^1.56.0",
+    "postcss": "^8.5.25",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3"
+  },
+  "browserslist": [
+    "chrome >= 111",
+    "edge >= 111",
+    "firefox >= 111",
+    "safari >= 16.4",
+    "not dead"
+  ]
+}
