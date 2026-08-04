@@ -33,6 +33,7 @@ import { degrees, dualEducationNarrative, certifications } from '../content/data
 import { skillGroups } from '../content/data/skills.ts';
 import { faqItems } from '../content/data/faq.ts';
 import { projects } from '../content/data/projects.ts';
+import { publishedNotes } from '../content/data/notes.ts';
 import { pageSeo } from '../content/data/seo.ts';
 import { ui } from '../content/data/ui.ts';
 
@@ -40,7 +41,7 @@ type Locale = (typeof LOCALES)[number];
 
 type RawDoc = {
   id: string;
-  type: 'page' | 'project' | 'experience' | 'education' | 'faq' | 'skill';
+  type: 'page' | 'project' | 'experience' | 'education' | 'faq' | 'skill' | 'note';
   title: string;
   subtitle: string;
   href: string;
@@ -191,6 +192,32 @@ function buildCorpus(locale: Locale): RawDoc[] {
       href: `${ROUTES.faq[locale]}#${item.id}`,
       excerpt: item.answer[locale].slice(0, 160),
       text: `${item.question[locale]} ${item.answer[locale]}`,
+    });
+  }
+
+  // --- Notes techniques ----------------------------------------------------
+  // `publishedNotes` exclut les brouillons : un texte non relu ne doit pas
+  // remonter dans la recherche, ni apparaître dans la constellation.
+  for (const note of publishedNotes) {
+    docs.push({
+      id: `note:${note.slug.fr}`,
+      type: 'note',
+      title: note.title[locale],
+      subtitle: ui.nav.notes[locale],
+      href: `${ROUTES.notes[locale]}/${note.slug[locale]}`,
+      excerpt: note.excerpt[locale],
+      text: [
+        note.title[locale],
+        note.excerpt[locale],
+        note.tags.join(' '),
+        note.body
+          .map((block) => {
+            if (block.kind === 'list') return block.items[locale].join(' ');
+            if (block.kind === 'code') return block.code;
+            return block.text[locale];
+          })
+          .join(' '),
+      ].join(' '),
     });
   }
 

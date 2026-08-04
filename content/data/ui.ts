@@ -7,6 +7,7 @@ export const ui = {
     about: { fr: 'À propos', en: 'About' },
     faq: { fr: 'FAQ', en: 'FAQ' },
     contact: { fr: 'Contact', en: 'Contact' },
+    notes: { fr: 'Notes', en: 'Notes' },
     resume: { fr: 'CV', en: 'Résumé' },
     home: { fr: 'Accueil', en: 'Home' },
     openMenu: { fr: 'Ouvrir le menu', en: 'Open menu' },
@@ -47,6 +48,25 @@ export const ui = {
     certifications: { fr: 'Certifications', en: 'Certifications' },
     languages: { fr: 'Langues', en: 'Languages' },
     contact: { fr: 'Parlons-en', en: 'Let’s talk' },
+  },
+  notes: {
+    lead: {
+      fr: 'Ce que j’ai appris en construisant, écrit pendant que c’est encore frais.',
+      en: 'What I learned while building, written while it is still fresh.',
+    },
+    empty: {
+      fr: 'Aucune note publiée pour le moment.',
+      en: 'No published notes yet.',
+    },
+    draftBadge: { fr: 'Brouillon', en: 'Draft' },
+    draftNotice: {
+      fr: 'Ce texte est un brouillon : il n’est pas publié, n’apparaît ni dans la liste, ni dans le flux, ni dans la recherche, et n’a pas encore été relu par son auteur.',
+      en: 'This is a draft: it is not published, appears in no list, feed or search result, and has not yet been reviewed by its author.',
+    },
+    readingTime: { fr: 'min de lecture', en: 'min read' },
+    relatedProject: { fr: 'L’étude de cas correspondante', en: 'The related case study' },
+    backToNotes: { fr: 'Retour aux notes', en: 'Back to notes' },
+    feed: { fr: 'Flux RSS', en: 'RSS feed' },
   },
   caseStudy: {
     context: { fr: 'Contexte', en: 'Context' },

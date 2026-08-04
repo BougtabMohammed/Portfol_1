@@ -14,6 +14,7 @@ import type { Locale } from './i18n';
 export type RouteKey =
   | 'home'
   | 'projects'
+  | 'notes'
   | 'experience'
   | 'about'
   | 'faq'
@@ -23,6 +24,7 @@ export type RouteKey =
 export const ROUTES: Record<RouteKey, Record<Locale, string>> = {
   home: { fr: '/', en: '/en' },
   projects: { fr: '/projets', en: '/en/projects' },
+  notes: { fr: '/notes', en: '/en/notes' },
   experience: { fr: '/parcours', en: '/en/experience' },
   about: { fr: '/a-propos', en: '/en/about' },
   faq: { fr: '/faq', en: '/en/faq' },
@@ -37,6 +39,11 @@ export function route(key: RouteKey, locale: Locale): string {
 /** URL d'une étude de cas. */
 export function projectRoute(slug: string, locale: Locale): string {
   return `${ROUTES.projects[locale]}/${slug}`;
+}
+
+/** URL d'une note technique. */
+export function noteRoute(slug: string, locale: Locale): string {
+  return `${ROUTES.notes[locale]}/${slug}`;
 }
 
 /**
@@ -70,6 +77,7 @@ function normalize(path: string): string {
 /** Ordre d'affichage dans la navigation principale. */
 export const NAV_KEYS: readonly RouteKey[] = [
   'projects',
+  'notes',
   'experience',
   'about',
   'faq',

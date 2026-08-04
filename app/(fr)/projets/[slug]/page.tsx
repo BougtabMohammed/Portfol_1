@@ -28,6 +28,7 @@ export async function generateMetadata({
     description: project.tagline.fr,
     keywords: project.stack,
     type: 'article',
+    ogImage: `/og/fr/project-${project.slug.fr}.png`,
   });
 }
 

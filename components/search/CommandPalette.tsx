@@ -30,6 +30,7 @@ const TYPE_LABEL: Record<DocType, { fr: string; en: string }> = {
   education: { fr: 'Formation', en: 'Education' },
   faq: { fr: 'FAQ', en: 'FAQ' },
   skill: { fr: 'Compétences', en: 'Skills' },
+  note: { fr: 'Note', en: 'Note' },
 };
 
 export function CommandPalette({

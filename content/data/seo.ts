@@ -44,6 +44,23 @@ export const pageSeo: Record<RouteKey, PageSeo> = {
       en: ['ai engineer portfolio', 'langgraph projects', 'rag case study', 'kafka spark pipeline'],
     },
   },
+  notes: {
+    title: {
+      fr: 'Notes techniques — RAG, agents et architecture',
+      en: 'Technical notes — RAG, agents and architecture',
+    },
+    // Une page de sommaire décrit sa rubrique, pas les sujets de ses articles.
+    // La version précédente citait « hallucination » et « découpage de corpus » —
+    // elle remportait alors les requêtes destinées aux articles eux-mêmes.
+    description: {
+      fr: 'Retours d’expérience sur la conception de systèmes d’IA destinés à la production : décisions d’architecture, arbitrages et enseignements de terrain.',
+      en: 'Field notes on designing AI systems meant for production: architectural decisions, trade-offs and lessons learned.',
+    },
+    keywords: {
+      fr: ['blog ai engineer', 'notes techniques ia', 'retour expérience ingénieur ia'],
+      en: ['ai engineer blog', 'ai engineering notes', 'ai engineer field notes'],
+    },
+  },
   experience: {
     title: {
       fr: 'Parcours & formation — Mohammed Bougtab',

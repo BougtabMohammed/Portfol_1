@@ -7,11 +7,12 @@ Site entièrement statique : sans backend, sans base de données, sans coût ré
 
 | | Performance | Accessibilité | Bonnes pratiques | SEO | LCP | CLS | TBT |
 |---|---|---|---|---|---|---|---|
-| Desktop | **100** | **100** | **100** | **100** | 0,6 s | 0 | 0 ms |
-| Mobile bridé | **97** | **100** | **100** | **100** | 2,3 s | 0 | 110 ms |
+| Desktop | **100** | **100** | **100** | **100** | 0,5 s | 0 | 0 ms |
+| Mobile bridé | **98** | **100** | **100** | **100** | 2,3 s | 0 | 40 ms |
 
-Contraste vérifié sur **1 824 éléments de texte rendus**, dans les deux thèmes : zéro sous
+Contraste vérifié sur **2 054 éléments de texte rendus**, dans les deux thèmes : zéro sous
 le seuil WCAG AA. Pertinence de la recherche : **12 requêtes de contrôle sur 12**.
+Aucun débordement horizontal à 390 px sur aucune page.
 
 ## Recherche vectorielle, sans serveur
 
@@ -50,6 +51,7 @@ npm run dev          # http://localhost:3000
 | `npm run serve` | Sert `out/` sur le port 3000 (vérification du build réel) |
 | `npm run typecheck` | TypeScript strict, sans émission |
 | `npm run build:search` | Régénère l'index de recherche (lancé automatiquement avant `build` et `dev`) |
+| `npm run build:og` | Régénère les 32 vignettes de partage (lancé automatiquement avant `build`) |
 | `npm run pdf` | Régénère les PDF du CV depuis les pages `/cv` et `/en/resume` |
 
 ## Déploiement
@@ -88,6 +90,7 @@ content/data/        ▸ TOUT le contenu factuel vit ici
   skills.ts          Compétences par couche
   faq.ts             Questions/réponses (données structurées FAQPage)
   traces.ts          Traces d'exécution (illustrations, jamais des mesures réelles)
+  notes.ts           Notes techniques — ▸ deux BROUILLONS en attente de relecture
   seo.ts             Titres et descriptions par page
   ui.ts              Chaînes d'interface
   METRICS-TODO.md    ▸ Métriques restant à valider avant mise en ligne
@@ -118,6 +121,24 @@ Trois points bloquants, tous détaillés dans **`content/data/METRICS-TODO.md`**
    `repository` des études de cas concernées. Tant qu'il est vide, aucun lien de code ne
    s'affiche — c'est volontaire, mais cela prive le dossier de sa seule preuve de code
    vérifiable.
+
+## Notes techniques — deux brouillons en attente
+
+`content/data/notes.ts` contient **deux articles marqués `draft: true`**, rédigés à partir de
+décisions d'architecture réellement prises et déjà documentées dans les études de cas. Ils
+développent ce travail ; ils n'inventent aucune expertise et n'avancent aucun chiffre non mesuré.
+
+Tant que le drapeau est levé, un brouillon est **exclu du sitemap, du flux RSS, de l'index de
+recherche et de la liste publique**, et sa page porte `noindex`. Il reste consultable par son
+URL directe, avec un bandeau qui le signale — c'est ainsi qu'on le relit.
+
+**Pour publier** : relire, corriger, s'approprier le texte, puis passer `draft` à `false`.
+Rien ne doit paraître sous une signature sans avoir été validé par la personne qui signe.
+
+| Article | URL de relecture |
+|---|---|
+| Pourquoi j'interdis à mes agents de produire un chiffre | `/notes/interdire-au-modele-de-produire-un-chiffre` |
+| Découper un corpus réglementaire : pourquoi la taille fixe échoue | `/notes/decouper-un-corpus-reglementaire` |
 
 ## Confidentialité
 
@@ -171,3 +192,15 @@ librairie généraliste en coûterait cinq fois plus.
   contrôle sur 12 : la normalisation L2 écrasait les termes rares des documents longs, si bien
   que la page « Projets » battait l'étude de cas Kafka sur la requête « kafka ». Le détail du
   diagnostic est dans `lib/vector.ts`.
+- **Une page de sommaire ne décrit jamais les sujets de ses enfants.** `/projets` puis
+  `/notes` remportaient les requêtes destinées à leurs propres articles, parce que leur
+  description les énumérait et que leur brièveté les favorisait en BM25.
+- **`min-w-0` sur les éléments de grille.** Ils valent `min-width: auto` par défaut et
+  refusent de rétrécir sous la largeur de leur contenu : la trace d'exécution élargissait la
+  page de 61 px sur mobile au lieu de défiler dans son cadre.
+- **Les liens de la constellation sont pré-calculés.** Ils ne dépendent que des coordonnées
+  ACP, qui sont fixes. Les recalculer à chaque image coûtait 703 distances par frame et
+  faisait tomber le mobile à 93 ; le pré-calcul l'a ramené à 98.
+- **`pointerleave` est ignoré au doigt.** Un pointeur tactile cesse d'exister après le
+  relâchement, si bien que Chromium émet `pointerleave` juste après `pointerup` — l'étiquette
+  révélée par un appui disparaissait aussitôt.

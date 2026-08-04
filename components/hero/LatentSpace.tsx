@@ -25,6 +25,7 @@ import { useSearch } from '@/components/search/SearchProvider';
 
 const TYPE_STYLE: Record<DocType, { radius: number; alpha: number }> = {
   project: { radius: 4.5, alpha: 0.95 },
+  note: { radius: 3.6, alpha: 0.8 },
   experience: { radius: 3.2, alpha: 0.7 },
   education: { radius: 3.2, alpha: 0.7 },
   skill: { radius: 2.6, alpha: 0.55 },
@@ -58,10 +59,14 @@ export function LatentSpace({ points, label }: { points: LatentPoint[]; label: s
     if (!context) return;
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const compact = window.matchMedia('(max-width: 639px)').matches;
     let width = 0;
     let height = 0;
     let frame = 0;
     let running = true;
+    // Sur téléphone, une image sur deux suffit : la dérive est lente, l'œil ne
+    // voit pas la différence, et la boucle consomme deux fois moins de batterie.
+    let tick = 0;
 
     const style = getComputedStyle(document.documentElement);
     const readColor = (name: string, fallback: string) =>
@@ -73,6 +78,25 @@ export function LatentSpace({ points, label }: { points: LatentPoint[]; label: s
     // Déclarée avant draw() qui la lit : la survol pilote le rendu sans provoquer
     // de nouveau rendu React à chaque déplacement de souris.
     const hoveredIdRef = { current: null as string | null };
+
+    /**
+     * Liens de voisinage, calculés une seule fois.
+     *
+     * Ils ne dépendent que des coordonnées issues de l'ACP, qui sont fixes — la
+     * dérive ne déplace les points que de trois pixels. Les recalculer à chaque
+     * image coûtait 703 distances par image pour 38 points, soit l'essentiel du
+     * temps bloquant mesuré sur mobile (240 ms de TBT, Lighthouse à 93).
+     */
+    const links: { a: number; b: number; strength: number }[] = [];
+    for (let i = 0; i < points.length; i++) {
+      for (let j = i + 1; j < points.length; j++) {
+        const a = points[i]!;
+        const b = points[j]!;
+        const distance = Math.hypot(a.x - b.x, a.y - b.y);
+        if (distance > LINK_DISTANCE) continue;
+        links.push({ a: i, b: j, strength: 1 - distance / LINK_DISTANCE });
+      }
+    }
 
     function resize() {
       const rect = wrap!.getBoundingClientRect();
@@ -107,21 +131,16 @@ export function LatentSpace({ points, label }: { points: LatentPoint[]; label: s
 
       // Liens de voisinage, tracés en premier pour passer sous les points.
       context!.lineWidth = 1;
-      for (let i = 0; i < rendered.length; i++) {
-        for (let j = i + 1; j < rendered.length; j++) {
-          const a = rendered[i]!;
-          const b = rendered[j]!;
-          const distance = Math.hypot(a.x - b.x, a.y - b.y);
-          if (distance > LINK_DISTANCE) continue;
-          const strength = 1 - distance / LINK_DISTANCE;
-          const lit = active.size > 0 && (active.has(a.id) || active.has(b.id));
-          context!.strokeStyle = lit ? accent : border;
-          context!.globalAlpha = (lit ? 0.5 : 0.22) * strength;
-          context!.beginPath();
-          context!.moveTo(a.px, a.py);
-          context!.lineTo(b.px, b.py);
-          context!.stroke();
-        }
+      for (const link of links) {
+        const a = rendered[link.a]!;
+        const b = rendered[link.b]!;
+        const lit = active.size > 0 && (active.has(a.id) || active.has(b.id));
+        context!.strokeStyle = lit ? accent : border;
+        context!.globalAlpha = (lit ? 0.5 : 0.22) * link.strength;
+        context!.beginPath();
+        context!.moveTo(a.px, a.py);
+        context!.lineTo(b.px, b.py);
+        context!.stroke();
       }
 
       // Points.
@@ -147,15 +166,30 @@ export function LatentSpace({ points, label }: { points: LatentPoint[]; label: s
       }
 
       context!.globalAlpha = 1;
-      if (!reduced) frame = requestAnimationFrame(draw);
+      if (!reduced) frame = requestAnimationFrame(step);
     }
 
-    function onPointerMove(event: PointerEvent) {
+    /** Cadence : pleine vitesse en desktop, une image sur deux en compact. */
+    function step(time: number) {
+      if (!running) return;
+      tick += 1;
+      // Un tiers de la cadence en compact : sur une bande de 190 px, la dérive
+      // est imperceptible et chaque image épargnée est du temps rendu au fil
+      // principal pendant le chargement.
+      if (compact && tick % 3 !== 0) {
+        frame = requestAnimationFrame(step);
+        return;
+      }
+      draw(time);
+    }
+
+    function pick(event: PointerEvent): Rendered | null {
       const rect = canvas!.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
       let nearest: Rendered | null = null;
-      let best = 18;
+      // La cible d'un doigt n'est pas celle d'un curseur.
+      let best = compact ? 26 : 18;
       for (const point of renderedRef.current) {
         const distance = Math.hypot(point.px - x, point.py - y);
         if (distance < best) {
@@ -163,14 +197,42 @@ export function LatentSpace({ points, label }: { points: LatentPoint[]; label: s
           nearest = point;
         }
       }
+      return nearest;
+    }
+
+    function apply(nearest: Rendered | null) {
       hoveredIdRef.current = nearest?.id ?? null;
       setHovered(nearest);
       canvas!.style.cursor = nearest ? 'pointer' : 'default';
     }
 
-    function onPointerLeave() {
-      hoveredIdRef.current = null;
-      setHovered(null);
+    function onPointerMove(event: PointerEvent) {
+      // Le survol ne concerne que les pointeurs qui survolent réellement.
+      if (event.pointerType === 'touch') return;
+      apply(pick(event));
+    }
+
+    /**
+     * Au doigt, `pointermove` ne se déclenche pas : un appui révèle donc
+     * l'étiquette, et c'est un second appui sur l'étiquette qui ouvre la page.
+     * Deux gestes délibérément — une navigation déclenchée par un effleurement
+     * serait subie plutôt que choisie.
+     */
+    function onPointerDown(event: PointerEvent) {
+      if (event.pointerType !== 'touch') return;
+      apply(pick(event));
+    }
+
+    /**
+     * Un pointeur tactile cesse d'exister après le relâchement : Chromium émet
+     * donc `pointerleave` juste après `pointerup`. Sans ce garde, l'étiquette
+     * révélée par un appui disparaissait dans la milliseconde — le geste
+     * paraissait sans effet. Au doigt, c'est un appui ailleurs qui referme,
+     * ce dont `onPointerDown` se charge déjà.
+     */
+    function onPointerLeave(event: PointerEvent) {
+      if (event.pointerType === 'touch') return;
+      apply(null);
     }
 
     resize();
@@ -184,17 +246,18 @@ export function LatentSpace({ points, label }: { points: LatentPoint[]; label: s
     const visibility = new IntersectionObserver(
       ([entry]) => {
         running = Boolean(entry?.isIntersecting);
-        if (running && !reduced) frame = requestAnimationFrame(draw);
+  if (running && !reduced) frame = requestAnimationFrame(step);
       },
       { threshold: 0 },
     );
     visibility.observe(wrap);
 
     canvas.addEventListener('pointermove', onPointerMove);
+    canvas.addEventListener('pointerdown', onPointerDown);
     canvas.addEventListener('pointerleave', onPointerLeave);
 
     if (reduced) draw(0);
-    else frame = requestAnimationFrame(draw);
+    else frame = requestAnimationFrame(step);
 
     return () => {
       running = false;
@@ -202,6 +265,7 @@ export function LatentSpace({ points, label }: { points: LatentPoint[]; label: s
       observer.disconnect();
       visibility.disconnect();
       canvas.removeEventListener('pointermove', onPointerMove);
+      canvas.removeEventListener('pointerdown', onPointerDown);
       canvas.removeEventListener('pointerleave', onPointerLeave);
     };
   }, [points]);

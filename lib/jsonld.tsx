@@ -5,6 +5,7 @@ import { degrees, certifications } from '@/content/data/education';
 import { skillGroups } from '@/content/data/skills';
 import { faqItems } from '@/content/data/faq';
 import type { Project } from '@/content/data/projects';
+import type { Note } from '@/content/data/notes';
 import { experiences } from '@/content/data/experiences';
 
 /**
@@ -177,6 +178,37 @@ export function projectSchema(project: Project, locale: Locale, path: string) {
   }
 
   return { ...base, '@type': 'CreativeWork' };
+}
+
+/**
+ * `Article` — pour les notes techniques.
+ *
+ * `author` et `publisher` pointent tous deux vers l'entité `Person` : sur un site
+ * personnel, confondre les deux est exact, et cela renforce l'association entre la
+ * personne et son expertise plutôt que de la diluer dans une organisation fictive.
+ */
+export function articleSchema(note: Note, locale: Locale, path: string) {
+  return {
+    '@type': 'Article',
+    '@id': `${absolute(path)}#article`,
+    url: absolute(path),
+    headline: note.title[locale],
+    description: note.excerpt[locale],
+    datePublished: note.date,
+    dateModified: note.date,
+    inLanguage: locale === 'fr' ? 'fr-MA' : 'en',
+    keywords: note.tags.join(', '),
+    wordCount: note.body.reduce((total, block) => {
+      if (block.kind === 'list') return total + block.items[locale].join(' ').split(/\s+/).length;
+      if (block.kind === 'code') return total;
+      return total + block.text[locale].split(/\s+/).length;
+    }, 0),
+    timeRequired: `PT${note.readingMinutes}M`,
+    author: { '@id': PERSON_ID },
+    publisher: { '@id': PERSON_ID },
+    isPartOf: { '@id': WEBSITE_ID },
+    mainEntityOfPage: absolute(path),
+  };
 }
 
 /** `FAQPage` — le schéma à plus fort effet sur les moteurs de réponse. */

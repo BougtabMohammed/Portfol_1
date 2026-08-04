@@ -14,6 +14,7 @@ export const metadata: Metadata = buildMetadata({
   title: pageSeo[KEY].title[LOCALE],
   description: pageSeo[KEY].description[LOCALE],
   keywords: pageSeo[KEY].keywords[LOCALE],
+  ogImage: `/og/en/page-${KEY}.png`,
 });
 
 export default function Page() {

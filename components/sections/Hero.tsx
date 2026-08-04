@@ -30,7 +30,11 @@ export function Hero({ locale }: { locale: Locale }) {
   return (
     <section className="relative border-b border-[var(--color-border)]">
       <div className="container-page grid gap-12 py-16 md:py-20 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-center lg:gap-16 lg:py-24">
-        <div>
+        {/* `min-w-0` : un élément de grille vaut `min-width: auto` par défaut et
+            refuse donc de rétrécir sous la largeur de son contenu. Sans cela, la
+            trace d'exécution élargissait la page entière de 61 px sur mobile au
+            lieu de défiler dans son propre cadre. */}
+        <div className="min-w-0">
           <p className="label-mono mb-6 flex items-center gap-2">
             <span
               className="inline-block size-1.5 rounded-full bg-[var(--color-accent)]"
@@ -69,8 +73,11 @@ export function Hero({ locale }: { locale: Locale }) {
           </p>
         </div>
 
-        {/* Hauteur fixée pour que rien ne bouge à l'apparition du canvas : CLS = 0. */}
-        <div className="hidden h-[460px] lg:block">
+        {/* Hauteur réservée dans les deux formats pour que rien ne bouge à
+            l'apparition du canvas : CLS = 0. En mobile la grille place
+            naturellement la carte sous le texte — un seul canvas, une seule
+            boucle d'animation. */}
+        <div className="h-[190px] w-full min-w-0 lg:h-[460px]">
           <LatentSpace points={points} label={ui.search.latentLabel[locale]} />
         </div>
       </div>

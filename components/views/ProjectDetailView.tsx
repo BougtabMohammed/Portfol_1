@@ -274,7 +274,9 @@ function Block({
     <Reveal as="section">
       <div className="grid gap-4 md:grid-cols-[80px_1fr] md:gap-8">
         <Label className="md:pt-1.5">{label}</Label>
-        <div>
+        {/* `min-w-0` — voir le commentaire du Hero : sans lui, la trace et les
+            schémas larges débordent la page au lieu de défiler. */}
+        <div className="min-w-0">
           <h2 className="mb-5 text-xl font-semibold tracking-[-0.015em] md:text-2xl">{title}</h2>
           {children}
         </div>

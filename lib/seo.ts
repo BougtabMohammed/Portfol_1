@@ -19,6 +19,8 @@ export function buildMetadata({
   description,
   keywords,
   type = 'website',
+  ogImage,
+  noIndex = false,
 }: {
   locale: Locale;
   /** Chemin de la page dans sa propre langue, ex. `/projets`. */
@@ -29,10 +31,15 @@ export function buildMetadata({
   description: string;
   keywords?: readonly string[];
   type?: 'website' | 'article' | 'profile';
+  /** Vignette de partage propre à la page. `/og.png` sert de repli. */
+  ogImage?: string;
+  /** Retire la page des index — utilisé par les brouillons. */
+  noIndex?: boolean;
 }): Metadata {
   const frPath = locale === 'fr' ? path : alternatePath;
   const enPath = locale === 'en' ? path : alternatePath;
   const canonical = absolute(path);
+  const image = absolute(ogImage ?? '/og.png');
 
   return {
     // `absolute` neutralise le gabarit du layout racine. Sans cela, une page
@@ -62,10 +69,10 @@ export function buildMetadata({
       alternateLocale: locale === 'fr' ? 'en_US' : 'fr_MA',
       images: [
         {
-          url: absolute('/og.png'),
+          url: image,
           width: 1200,
           height: 630,
-          alt: `${profile.name} — ${profile.jobTitle[locale]}`,
+          alt: `${title} — ${profile.name}`,
         },
       ],
     },
@@ -73,13 +80,13 @@ export function buildMetadata({
       card: 'summary_large_image',
       title,
       description,
-      images: [absolute('/og.png')],
+      images: [image],
     },
     robots: {
-      index: true,
+      index: !noIndex,
       follow: true,
       googleBot: {
-        index: true,
+        index: !noIndex,
         follow: true,
         'max-image-preview': 'large',
         'max-snippet': -1,

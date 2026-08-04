@@ -16,8 +16,9 @@
     "typecheck": "tsc --noEmit",
     "pdf": "node scripts/generate-pdf.mjs",
     "build:search": "node --experimental-strip-types --no-warnings scripts/build-search-index.ts",
-    "prebuild": "npm run build:search",
-    "predev": "npm run build:search"
+    "prebuild": "npm run build:search && npm run build:og",
+    "predev": "npm run build:search",
+    "build:og": "node --experimental-strip-types --no-warnings scripts/generate-og-images.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",

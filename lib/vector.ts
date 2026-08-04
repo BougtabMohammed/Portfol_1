@@ -43,6 +43,7 @@ const B = 0.45;
  */
 const TYPE_PRIOR: Record<DocType, number> = {
   project: 1,
+  note: 1,
   faq: 1,
   experience: 1,
   education: 1,
@@ -50,7 +51,14 @@ const TYPE_PRIOR: Record<DocType, number> = {
   page: 0.82,
 };
 
-export type DocType = 'page' | 'project' | 'experience' | 'education' | 'faq' | 'skill';
+export type DocType =
+  | 'page'
+  | 'project'
+  | 'experience'
+  | 'education'
+  | 'faq'
+  | 'skill'
+  | 'note';
 
 export type IndexedDoc = {
   id: string;

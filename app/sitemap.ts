@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { ROUTES, type RouteKey } from '@/lib/routes';
 import { projects } from '@/content/data/projects';
+import { publishedNotes } from '@/content/data/notes';
 import { absolute } from '@/lib/seo';
 
 /**
@@ -19,6 +20,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const priorities: Record<RouteKey, number> = {
     home: 1,
     projects: 0.9,
+    notes: 0.85,
     experience: 0.8,
     about: 0.8,
     faq: 0.7,
@@ -56,5 +58,21 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })),
   );
 
-  return [...staticPages, ...projectPages];
+  // Les brouillons ne figurent jamais au sitemap : `publishedNotes` les exclut.
+  const notePages = publishedNotes.flatMap((note) =>
+    (['fr', 'en'] as const).map((locale) => ({
+      url: absolute(`${ROUTES.notes[locale]}/${note.slug[locale]}`),
+      lastModified: new Date(note.date),
+      changeFrequency: 'yearly' as const,
+      priority: 0.75,
+      alternates: {
+        languages: {
+          'fr-MA': absolute(`${ROUTES.notes.fr}/${note.slug.fr}`),
+          en: absolute(`${ROUTES.notes.en}/${note.slug.en}`),
+        },
+      },
+    })),
+  );
+
+  return [...staticPages, ...projectPages, ...notePages];
 }

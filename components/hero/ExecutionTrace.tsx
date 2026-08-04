@@ -27,7 +27,7 @@ export function ExecutionTrace({
   return (
     <figure
       className={cn(
-        'overflow-x-auto rounded-[8px] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 font-mono text-[13px] leading-relaxed md:p-5',
+        'max-w-full overflow-x-auto rounded-[8px] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 font-mono text-[13px] leading-relaxed md:p-5',
         className,
       )}
     >
