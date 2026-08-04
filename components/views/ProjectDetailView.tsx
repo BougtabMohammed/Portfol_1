@@ -4,9 +4,11 @@ import type { Locale } from '@/lib/i18n';
 import { route } from '@/lib/routes';
 import { REVEAL_CONFIDENTIAL_NAMES } from '@/content/data/profile';
 import { relatedProjects, type Project } from '@/content/data/projects';
+import { projectTraces } from '@/content/data/traces';
 import { ui } from '@/content/data/ui';
 import { PageShell } from '@/components/layout/PageShell';
 import { ArchitectureDiagram } from '@/components/project/ArchitectureDiagram';
+import { ExecutionTrace } from '@/components/hero/ExecutionTrace';
 import { ProjectCard } from '@/components/project/ProjectCard';
 import { ContactCta } from '@/components/sections/ContactCta';
 import { Label, Tag } from '@/components/ui/primitives';
@@ -34,6 +36,7 @@ export function ProjectDetailView({ project, locale }: { project: Project; local
   const otherLocale: Locale = locale === 'fr' ? 'en' : 'fr';
   const alternate = `${route('projects', otherLocale)}/${project.slug[otherLocale]}`;
   const related = relatedProjects(project);
+  const trace = projectTraces[project.slug.fr];
 
   const client =
     REVEAL_CONFIDENTIAL_NAMES && project.clientReal
@@ -124,6 +127,12 @@ export function ProjectDetailView({ project, locale }: { project: Project; local
         </header>
 
         <div className="mt-14 space-y-14">
+          {trace ? (
+            <Block label="00" title={ui.caseStudy.trace[locale]}>
+              <ExecutionTrace trace={trace} locale={locale} />
+            </Block>
+          ) : null}
+
           <Block label="01" title={ui.caseStudy.context[locale]}>
             <p className="prose-column leading-relaxed">{project.context[locale]}</p>
           </Block>

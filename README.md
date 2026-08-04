@@ -8,10 +8,29 @@ Site entièrement statique : sans backend, sans base de données, sans coût ré
 | | Performance | Accessibilité | Bonnes pratiques | SEO | LCP | CLS | TBT |
 |---|---|---|---|---|---|---|---|
 | Desktop | **100** | **100** | **100** | **100** | 0,6 s | 0 | 0 ms |
-| Mobile bridé | **98** | **100** | **100** | **100** | 2,3 s | 0 | 110 ms |
+| Mobile bridé | **97** | **100** | **100** | **100** | 2,3 s | 0 | 110 ms |
 
-Contraste vérifié sur **1 726 éléments de texte rendus**, dans les deux thèmes : zéro sous
-le seuil WCAG AA.
+Contraste vérifié sur **1 824 éléments de texte rendus**, dans les deux thèmes : zéro sous
+le seuil WCAG AA. Pertinence de la recherche : **12 requêtes de contrôle sur 12**.
+
+## Recherche vectorielle, sans serveur
+
+Le site embarque une recherche **BM25 exécutée entièrement dans le navigateur** (`⌘K`, `Ctrl+K`
+ou `/`). Chaque page, étude de cas, expérience, question et groupe de compétences est indexé au
+build par `scripts/build-search-index.ts` : tokenisation en unigrammes et bigrammes, pondération
+de champ, IDF pré-calculé, puis projection 2D par analyse en composantes principales.
+
+Taper « comment il gère les hallucinations » remonte l'étude de cas budgétaire, sans que le mot
+figure dans son titre. Aucune requête réseau, aucune clé d'API, aucun coût : l'index (~23 Ko
+compressés par langue) n'est téléchargé qu'à la première ouverture de la palette.
+
+Le hero affiche la **carte de cet espace latent** : chaque point est un document, placé par la
+même projection. La proximité à l'écran est une proximité de vocabulaire réelle, et les points
+s'illuminent quand la recherche trouve.
+
+> **Sur le vocabulaire employé.** L'interface annonce « BM25 · calcul local, aucun serveur » et
+> « projeté par ACP ». Jamais « embeddings LLM » : ce serait faux, et sur un portfolio d'AI
+> Engineer un abus de vocabulaire se retourne en entretien.
 
 ---
 
@@ -30,6 +49,7 @@ npm run dev          # http://localhost:3000
 | `npm run build` | Export statique complet dans `out/` |
 | `npm run serve` | Sert `out/` sur le port 3000 (vérification du build réel) |
 | `npm run typecheck` | TypeScript strict, sans émission |
+| `npm run build:search` | Régénère l'index de recherche (lancé automatiquement avant `build` et `dev`) |
 | `npm run pdf` | Régénère les PDF du CV depuis les pages `/cv` et `/en/resume` |
 
 ## Déploiement
@@ -52,8 +72,10 @@ app/
   globals.css        Design system : tous les jetons de couleur et de typographie
 
 components/
-  layout/            Header, Footer, PageShell, thème
+  layout/            Header, Footer, PageShell, thème, colonne de flux
   sections/          Hero, ProofBar, Thesis, Timeline, DualEducation, SkillLayers, CTA
+  hero/              Carte de l'espace latent, trace d'exécution
+  search/            Palette ⌘K et contexte de recherche
   project/           Carte projet, schéma d'architecture, filtres
   views/             Une vue par page, partagée entre les deux langues
   ui/                Primitives et icônes de marque
@@ -65,12 +87,15 @@ content/data/        ▸ TOUT le contenu factuel vit ici
   projects.ts        Les six études de cas
   skills.ts          Compétences par couche
   faq.ts             Questions/réponses (données structurées FAQPage)
+  traces.ts          Traces d'exécution (illustrations, jamais des mesures réelles)
   seo.ts             Titres et descriptions par page
   ui.ts              Chaînes d'interface
   METRICS-TODO.md    ▸ Métriques restant à valider avant mise en ligne
 
-lib/                 i18n, routes, SEO, JSON-LD, polices
-scripts/             Génération des PDF
+content/generated/   Index de recherche, régénéré au build (committé)
+
+lib/                 i18n, routes, SEO, JSON-LD, polices, tokenisation, BM25
+scripts/             Construction de l'index, génération des PDF
 ```
 
 ### Le principe à retenir
@@ -118,10 +143,14 @@ sont pas publiées tant qu'elles ne sont pas validées.
 Next.js 15 (App Router, export statique) · React 19 · TypeScript strict · Tailwind CSS v4 ·
 Lucide · Inter + JetBrains Mono auto-hébergées.
 
-**Aucune librairie d'animation.** Les révélations au scroll utilisent IntersectionObserver et
-trois règles CSS : Framer Motion coûtait 56 Ko de JavaScript de première visite pour un fondu
-de 12 pixels, soit un tiers du budget total. Voir le commentaire dans
-`components/motion/Reveal.tsx`.
+**Aucune librairie d'animation, aucune librairie de recherche.** Les révélations au scroll
+utilisent IntersectionObserver et trois règles CSS : Framer Motion coûtait 56 Ko de JavaScript
+de première visite pour un fondu de 12 pixels, soit un tiers du budget total. La recherche est
+écrite à la main pour la même raison — et parce qu'un index sur mesure tient en 23 Ko là où une
+librairie généraliste en coûterait cinq fois plus.
+
+**Aucun WebGL.** La constellation est du Canvas 2D : ~40 points, une boucle suspendue hors
+écran, et un unique rendu statique sous `prefers-reduced-motion`.
 
 ## Choix d'architecture notables
 
@@ -136,3 +165,9 @@ de 12 pixels, soit un tiers du budget total. Voir le commentaire dans
 - **Le site reste lisible sans JavaScript.** L'état masqué des révélations est conditionné à
   une classe `js` posée au runtime : sans script, tout est visible. C'est la condition
   d'entrée de l'indexation par les crawlers des moteurs de réponse, qui n'exécutent pas de JS.
+- **La trace d'exécution du hero n'utilise aucun JavaScript** : la cascade est une animation
+  CSS dont chaque ligne dérive son délai de son rang.
+- **BM25 plutôt que TF-IDF cosinus.** Le premier essai ne réussissait que 5 requêtes de
+  contrôle sur 12 : la normalisation L2 écrasait les termes rares des documents longs, si bien
+  que la page « Projets » battait l'étude de cas Kafka sur la requête « kafka ». Le détail du
+  diagnostic est dans `lib/vector.ts`.

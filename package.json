@@ -14,7 +14,10 @@
     "start": "next start",
     "serve": "npx --yes serve@14 out -p 3000",
     "typecheck": "tsc --noEmit",
-    "pdf": "node scripts/generate-pdf.mjs"
+    "pdf": "node scripts/generate-pdf.mjs",
+    "build:search": "node --experimental-strip-types --no-warnings scripts/build-search-index.ts",
+    "prebuild": "npm run build:search",
+    "predev": "npm run build:search"
   },
   "dependencies": {
     "clsx": "^2.1.1",

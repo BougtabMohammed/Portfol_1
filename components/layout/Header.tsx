@@ -6,6 +6,7 @@ import { Menu, X, Languages } from 'lucide-react';
 import type { Locale } from '@/lib/i18n';
 import { NAV_KEYS, ROUTES, route, type RouteKey } from '@/lib/routes';
 import { ui } from '@/content/data/ui';
+import { SearchTrigger } from '@/components/search/SearchProvider';
 import { ThemeToggle } from './ThemeToggle';
 import { cn } from '@/lib/utils';
 
@@ -115,6 +116,8 @@ export function Header({
         </nav>
 
         <div className="flex items-center gap-2">
+          <SearchTrigger label={ui.search.title[locale]} shortcut="⌘K" />
+
           <Link
             href={alternateHref}
             hrefLang={locale === 'fr' ? 'en' : 'fr'}

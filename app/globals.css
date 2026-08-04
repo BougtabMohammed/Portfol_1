@@ -257,3 +257,95 @@
     line-height: 1.4 !important;
   }
 }
+
+/* ==========================================================================
+   Trace d'exécution.
+
+   Cascade en CSS pur : chaque ligne porte son rang dans `--step` et en dérive son
+   délai. Aucun JavaScript, aucun travail sur le fil principal — l'animation ne
+   touche que l'opacité et la translation, donc elle est compositée par le GPU.
+   ========================================================================== */
+
+@keyframes trace-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.trace-step {
+  opacity: 0;
+  animation: trace-in 360ms var(--ease-out-expo) forwards;
+  animation-delay: calc(var(--step, 0) * 150ms + 250ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trace-step {
+    opacity: 1;
+    animation: none;
+    transform: none;
+  }
+}
+
+/* ==========================================================================
+   Schémas d'architecture — la donnée traverse le diagramme.
+
+   Deux animations en CSS pur, décalées par le rang de la couche (`--layer`) :
+   le trait se dessine, puis un point le descend. Elles ne touchent que
+   `stroke-dashoffset` et `translate`, donc restent hors du fil principal.
+   Le point ne boucle que trois fois : une animation perpétuelle sur une page
+   de lecture longue fatigue et consomme pour rien.
+   ========================================================================== */
+
+@keyframes diagram-draw {
+  from {
+    stroke-dashoffset: 28;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes diagram-flow {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(28px);
+    opacity: 0;
+  }
+}
+
+.diagram-line {
+  stroke-dasharray: 28;
+  animation: diagram-draw 500ms var(--ease-out-expo) forwards;
+  animation-delay: calc(var(--layer, 0) * 160ms);
+}
+
+.diagram-pulse {
+  opacity: 0;
+  animation: diagram-flow 1100ms ease-in-out 3;
+  animation-delay: calc(var(--layer, 0) * 160ms + 400ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .diagram-line {
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+
+  .diagram-pulse {
+    display: none;
+  }
+}

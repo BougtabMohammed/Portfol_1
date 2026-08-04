@@ -9,6 +9,12 @@ import { cn } from '@/lib/utils';
  * lecteur d'écran et par un moteur d'indexation, s'adapte à la largeur de
  * l'écran, suit le thème clair ou sombre, et ne coûte aucun octet de bitmap.
  * C'est le seul visuel du site — et il porte de l'information, pas du décor.
+ *
+ * Les connecteurs entre couches sont animés : un trait se dessine de haut en bas,
+ * puis un point le parcourt. La donnée traverse littéralement le schéma. Tout est
+ * en CSS (`stroke-dashoffset` et `offset-distance`), donc sans JavaScript et sans
+ * travail sur le fil principal ; l'animation ne démarre qu'une fois, et jamais
+ * sous `prefers-reduced-motion`.
  */
 export function ArchitectureDiagram({
   layers,
@@ -66,9 +72,7 @@ export function ArchitectureDiagram({
               </div>
 
               {layerIndex < layers.length - 1 ? (
-                <div className="md:pl-[164px]" aria-hidden>
-                  <span className="my-2 ml-4 block h-5 w-px bg-[var(--color-border-strong)]" />
-                </div>
+                <Connector index={layerIndex} />
               ) : null}
             </li>
           ))}
@@ -78,5 +82,36 @@ export function ArchitectureDiagram({
         {caption}
       </figcaption>
     </figure>
+  );
+}
+
+/**
+ * Connecteur entre deux couches : un trait qui se dessine, puis un point qui
+ * le descend. Le délai est dérivé du rang de la couche, si bien que le flux
+ * progresse de haut en bas comme une exécution réelle.
+ */
+function Connector({ index }: { index: number }) {
+  return (
+    <div className="md:pl-[164px]" aria-hidden>
+      <svg
+        width="9"
+        height="28"
+        viewBox="0 0 9 28"
+        fill="none"
+        className="my-1 ml-[11.5px] block overflow-visible"
+        style={{ '--layer': index } as React.CSSProperties}
+      >
+        <line
+          x1="4.5"
+          y1="0"
+          x2="4.5"
+          y2="28"
+          stroke="var(--color-border-strong)"
+          strokeWidth="1"
+          className="diagram-line"
+        />
+        <circle cx="4.5" cy="0" r="2" fill="var(--color-accent)" className="diagram-pulse" />
+      </svg>
+    </div>
   );
 }

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { Locale } from '@/lib/i18n';
 import type { RouteKey } from '@/lib/routes';
 import { ui } from '@/content/data/ui';
+import { SearchProvider } from '@/components/search/SearchProvider';
 import { Header } from './Header';
 import { Footer } from './Footer';
 
@@ -11,6 +12,9 @@ import { Footer } from './Footer';
  * Le lien « aller au contenu » est le premier élément focalisable du document —
  * exigence WCAG pour qu'un utilisateur au clavier n'ait pas à traverser la
  * navigation à chaque page.
+ *
+ * `SearchProvider` enveloppe l'ensemble : il capte le raccourci clavier une seule
+ * fois pour tout le site et n'insère la palette dans le DOM qu'à son ouverture.
  */
 export function PageShell({
   locale,
@@ -24,10 +28,10 @@ export function PageShell({
   children: ReactNode;
 }) {
   return (
-    <>
+    <SearchProvider locale={locale}>
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-[6px] focus:bg-[var(--color-accent)] focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-[var(--color-on-accent)]"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[80] focus:rounded-[6px] focus:bg-[var(--color-accent)] focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-[var(--color-on-accent)]"
       >
         {ui.skipToContent[locale]}
       </a>
@@ -39,6 +43,6 @@ export function PageShell({
       </main>
 
       <Footer locale={locale} />
-    </>
+    </SearchProvider>
   );
 }

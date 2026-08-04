@@ -5,6 +5,7 @@ import { route } from '@/lib/routes';
 import { featuredProjects } from '@/content/data/projects';
 import { ui } from '@/content/data/ui';
 import { PageShell } from '@/components/layout/PageShell';
+import { FlowRail } from '@/components/layout/FlowRail';
 import { Hero } from '@/components/sections/Hero';
 import { ProofBar } from '@/components/sections/ProofBar';
 import { Thesis } from '@/components/sections/Thesis';
@@ -41,6 +42,16 @@ export function HomeView({ locale }: { locale: Locale }) {
           websiteSchema(locale),
           profilePageSchema(locale, homePath),
         )}
+      />
+
+      <FlowRail
+        steps={[
+          { id: 'thesis', label: locale === 'fr' ? 'Thèse' : 'Thesis' },
+          { id: 'projects', label: locale === 'fr' ? 'Projets' : 'Projects' },
+          { id: 'journey', label: locale === 'fr' ? 'Parcours' : 'Journey' },
+          { id: 'education', label: locale === 'fr' ? 'Formation' : 'Education' },
+          { id: 'skills', label: locale === 'fr' ? 'Compétences' : 'Skills' },
+        ]}
       />
 
       <Hero locale={locale} />

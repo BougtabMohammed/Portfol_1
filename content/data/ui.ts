@@ -65,6 +65,35 @@ export const ui = {
     role: { fr: 'Rôle', en: 'Role' },
     period: { fr: 'Période', en: 'Period' },
     stack: { fr: 'Stack', en: 'Stack' },
+    trace: { fr: 'Le système en action', en: 'The system in action' },
+  },
+  search: {
+    title: { fr: 'Rechercher dans le portfolio', en: 'Search the portfolio' },
+    open: { fr: 'Rechercher', en: 'Search' },
+    placeholder: {
+      fr: 'Une question, une techno, un projet…',
+      en: 'A question, a technology, a project…',
+    },
+    hint: {
+      fr: 'Essayez « systèmes multi-agents », « secteur public » ou « comment il gère les hallucinations ».',
+      en: 'Try “multi-agent systems”, “public sector” or “how does he handle hallucination”.',
+    },
+    loading: { fr: 'Chargement de l’index…', en: 'Loading the index…' },
+    empty: { fr: 'Aucun résultat.', en: 'No results.' },
+    results: { fr: 'Résultats', en: 'Results' },
+    enterHint: { fr: 'pour ouvrir', en: 'to open' },
+    scoreTitle: {
+      fr: 'Score de pertinence relatif au meilleur résultat',
+      en: 'Relevance score, relative to the best match',
+    },
+    method: {
+      fr: 'BM25 · calcul local, aucun serveur',
+      en: 'BM25 · computed locally, no server',
+    },
+    latentLabel: {
+      fr: 'Espace latent — contenus du site projetés par ACP · ⌘K pour interroger',
+      en: 'Latent space — site content projected by PCA · ⌘K to query',
+    },
   },
   meta: {
     confidentialNotice: {
